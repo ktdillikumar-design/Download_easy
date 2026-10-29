@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File Manager | Dillikumar</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 30px 16px;
+  font-family: Arial, sans-serif;
+  background: #090909;
+  color: white;
+}
+
+.container {
+  max-width: 750px;
+  margin: 40px auto;
+}
+
+h1 {
+  color: #ff4b42;
+  text-align: center;
+}
+
+.subtitle {
+  color: #aaa;
+  text-align: center;
+}
+
+.upload-box {
+  margin: 30px 0;
+  padding: 35px 20px;
+  text-align: center;
+  border: 2px dashed #ff4b42;
+  border-radius: 14px;
+  background: #151515;
+}
+
+input[type="file"] {
+  display: block;
+  max-width: 100%;
+  margin: 20px auto;
+}
+
+button, .download {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #ff4b42;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px;
+}
+
+button:hover, .download:hover {
+  background: #d93630;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 15px;
+  background: #191919;
+  border: 1px solid #333;
+  border-radius: 9px;
+}
+
+.file-name {
+  overflow-wrap: anywhere;
+  flex: 1;
+}
+
+.file-size {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+  padding: 25px;
+}
+
+#message {
+  text-align: center;
+  color: #ff8b82;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>My File Manager</h1>
+  <p class="subtitle">Upload, view and download your files</p>
+
+  <div class="upload-box">
+    <h2>Upload Your Files</h2>
+    <p>Select one or more files from your device.</p>
+
+    <input type="file" id="fileInput" multiple>
+    <button onclick="uploadFiles()">Upload Files</button>
+  </div>
+
+  <p id="message"></p>
+
+  <h2>Your Files</h2>
+  <div id="fileList">
+    <p class="empty">No files uploaded yet.</p>
+  </div>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const message = document.getElementById("message");
+
+let files = [];
+
+function uploadFiles() {
+  const selected = Array.from(fileInput.files);
+
+  if (selected.length === 0) {
+    message.textContent = "Please select a file first.";
+    return;
+  }
+
+  files.push(...selected);
+  fileInput.value = "";
+  message.textContent = "Files added successfully!";
+  renderFiles();
+}
+
+function renderFiles() {
+  fileList.replaceChildren();
+
+  if (files.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No files uploaded yet.";
+    fileList.appendChild(empty);
+    return;
+  }
+
+  files.forEach((file, index) => {
+    const row = document.createElement("div");
+    row.className = "file-item";
+
+    const info = document.createElement("div");
+    info.className = "file-name";
+
+    const name = document.createElement("strong");
+    name.textContent = file.name;
+
+    const size = document.createElement("div");
+    size.className = "file-size";
+    size.textContent = formatSize(file.size);
+
+    info.append(name, size);
+
+    const download = document.createElement("button");
+    download.textContent = "Download";
+    download.addEventListener("click", () => {
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.name;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    const remove = document.createElement("button");
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => {
+      files.splice(index, 1);
+      message.textContent = "File removed from the list.";
+      renderFiles();
+    });
+
+    row.append(info, download, remove);
+    fileList.appendChild(row);
+  });
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + " bytes";
+  if (bytes < 1024 * 1024)
+    return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+}
+</script>
+</body>
+</html>
